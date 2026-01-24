@@ -61,8 +61,9 @@ func NewConsumer(client SQSClient, queueURL string, opts ...Option) *Consumer {
 	return c
 }
 
-func (c *Consumer) Use(mw ...MiddlewareFunc) {
+func (c *Consumer) Use(mw ...MiddlewareFunc) *Consumer {
 	c.middleware = append(c.middleware, mw...)
+	return c
 }
 
 func (c *Consumer) HandleFunc(h HandlerFunc) *Route {

@@ -45,6 +45,15 @@ func (r *Route) Attribute(key, value string) *Route {
 	return r.addMatcher(&attributeMatcher{key, value})
 }
 
+func (r *Route) MatchFunc(fn MatcherFunc) *Route {
+	return r.addMatcher(fn)
+}
+
+func (r *Route) Use(mw ...MiddlewareFunc) *Route {
+	r.middleware = append(r.middleware, mw...)
+	return r
+}
+
 func (r *Route) matches(c *Context) bool {
 	for _, m := range r.matchers {
 		if !m.Match(c) {
