@@ -10,9 +10,9 @@ func WithWorkers(n int) Option {
 	}
 }
 
-func WithVisibilityTimeout(seconds int32) Option {
+func WithVisibilityTimeout(timeout time.Duration) Option {
 	return func(r *Consumer) {
-		r.visibilityTimeout = seconds
+		r.visibilityTimeout = timeout
 	}
 }
 

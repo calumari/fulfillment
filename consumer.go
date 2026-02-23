@@ -28,7 +28,7 @@ type Consumer struct {
 	middleware []MiddlewareFunc
 
 	workers           int
-	visibilityTimeout int32
+	visibilityTimeout time.Duration
 	heartbeatInterval time.Duration
 	batchSize         int32
 	waitTime          int32
@@ -48,7 +48,7 @@ func NewConsumer(client SQSClient, queueURL string, opts ...Option) *Consumer {
 		client:            client,
 		url:               queueURL,
 		workers:           1,
-		visibilityTimeout: 30,
+		visibilityTimeout: 30 * time.Second,
 		batchSize:         10,
 		waitTime:          20,
 		deleteQueueSize:   100,
@@ -128,7 +128,7 @@ func (c *Consumer) poll(ctx context.Context, msgs chan<- types.Message) {
 			QueueUrl:              &c.url,
 			MaxNumberOfMessages:   c.batchSize,
 			WaitTimeSeconds:       c.waitTime,
-			VisibilityTimeout:     c.visibilityTimeout,
+			VisibilityTimeout:     int32(c.visibilityTimeout / time.Second),
 			MessageAttributeNames: []string{"All"},
 			AttributeNames:        []types.QueueAttributeName{types.QueueAttributeNameAll},
 		})
@@ -290,7 +290,7 @@ func (c *Consumer) batchHeartbeatWorker(ctx context.Context) {
 						entries = append(entries, types.ChangeMessageVisibilityBatchRequestEntry{
 							Id:                msg.MessageId,
 							ReceiptHandle:     msg.ReceiptHandle,
-							VisibilityTimeout: c.visibilityTimeout,
+							VisibilityTimeout: int32(c.visibilityTimeout / time.Second),
 						})
 					}
 				}
