@@ -37,6 +37,8 @@ type Consumer struct {
 
 	deleteQueue    chan *types.Message
 	heartbeatQueue *syncMap[string, *types.Message]
+
+	monitor Monitor
 }
 
 const (
@@ -54,6 +56,7 @@ func NewConsumer(client SQSClient, queueURL string, opts ...Option) *Consumer {
 		deleteQueueSize:   100,
 		flushInterval:     time.Second,
 		heartbeatQueue:    newSyncMap[string, *types.Message](),
+		monitor:           new(noopMonitor),
 	}
 	for _, opt := range opts {
 		opt(c)
@@ -150,6 +153,8 @@ func (c *Consumer) poll(ctx context.Context, msgs chan<- types.Message) {
 
 		backoff = minBackoff
 
+		c.monitor.RecordPoll(len(out.Messages))
+
 		for _, msg := range out.Messages {
 			select {
 			case msgs <- msg:
@@ -191,7 +196,14 @@ func (r *Consumer) process(ctx context.Context, msg types.Message) {
 		defer r.heartbeatQueue.Delete(*msg.MessageId)
 	}
 
+	start := time.Now()
 	err := h(c)
+	status := EventStatusSuccess
+	if err != nil {
+		status = EventStatusError
+	}
+	r.monitor.RecordMessage(start, time.Now(), status)
+
 	if err != nil {
 		return
 	}
@@ -246,6 +258,7 @@ func (c *Consumer) batchDeleteWorker(ctx context.Context) {
 			for _, f := range result.Failed {
 				slog.Warn("deleting message", "id", *f.Id, "code", *f.Code, "error", *f.Message)
 			}
+			c.monitor.RecordDelete(len(entries)-len(result.Failed), len(result.Failed))
 		}
 
 		batch = batch[:0]

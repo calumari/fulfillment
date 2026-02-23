@@ -53,3 +53,11 @@ func WithFlushInterval(d time.Duration) Option {
 		}
 	}
 }
+
+func WithMonitor(m Monitor) Option {
+	return func(r *Consumer) {
+		if m != nil {
+			r.monitor = m
+		}
+	}
+}
