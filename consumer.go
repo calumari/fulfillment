@@ -163,7 +163,7 @@ func (c *Consumer) poll(ctx context.Context, msgs chan<- types.Message) {
 func (r *Consumer) process(ctx context.Context, msg types.Message) {
 	c := &Context{
 		ctx:     ctx,
-		Message: &msg,
+		message: &msg,
 	}
 
 	var route *Route

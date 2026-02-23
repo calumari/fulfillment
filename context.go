@@ -8,11 +8,11 @@ import (
 
 type Context struct {
 	ctx     context.Context
-	Message *types.Message
+	message *types.Message
 }
 
 func NewContext(ctx context.Context, msg *types.Message) *Context {
-	return &Context{ctx: ctx, Message: msg}
+	return &Context{ctx: ctx, message: msg}
 }
 
 func (c *Context) Context() context.Context {
@@ -20,29 +20,33 @@ func (c *Context) Context() context.Context {
 }
 
 func (c *Context) WithContext(ctx context.Context) *Context {
-	return &Context{ctx: ctx, Message: c.Message}
+	return &Context{ctx: ctx, message: c.message}
+}
+
+func (c *Context) Message() *types.Message {
+	return c.message
 }
 
 func (c *Context) Body() string {
-	if c.Message.Body == nil {
+	if c.message.Body == nil {
 		return ""
 	}
-	return *c.Message.Body
+	return *c.message.Body
 }
 
 func (c *Context) ID() string {
-	if c.Message.MessageId == nil {
+	if c.message.MessageId == nil {
 		return ""
 	}
-	return *c.Message.MessageId
+	return *c.message.MessageId
 }
 
 func (c *Context) Attribute(key string) string {
-	return c.Message.Attributes[key]
+	return c.message.Attributes[key]
 }
 
 func (c *Context) MessageAttribute(key string) string {
-	if attr, ok := c.Message.MessageAttributes[key]; ok && attr.StringValue != nil {
+	if attr, ok := c.message.MessageAttributes[key]; ok && attr.StringValue != nil {
 		return *attr.StringValue
 	}
 	return ""
