@@ -11,6 +11,10 @@ type Context struct {
 	Message *types.Message
 }
 
+func NewContext(ctx context.Context, msg *types.Message) *Context {
+	return &Context{ctx: ctx, Message: msg}
+}
+
 func (c *Context) Context() context.Context {
 	return c.ctx
 }
